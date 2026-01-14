@@ -4,13 +4,21 @@ from datetime import date
 
 # CONSTANTS
 DAYS_IN_CYCLE = 30
-PLATFORM_PROFIT_RATE = 0.5
 MIN_JOIN_DAYS = 15
 PAYOUT_UNLOCK_DAYS = 3
+
+# PROFIT RATES PER SUBSCRIPTION
+PLATFORM_PROFIT_RATE = {
+    "Spotify": 0.7,
+    "Apple music": 1.5,
+    "Netflix": 0.36,
+    "Youtube": 0.7
+}
 
 # DATA MODELS
 @dataclass
 class SubscriptionPlan:
+    name: str
     total_price: int       #e.g 2500
     total_slots: int       #e.g 6 including owner
     start_date: date
@@ -43,9 +51,19 @@ def prorated_real_cost(today: date, plan: SubscriptionPlan) -> float:
     per_day_cost = real_cost_per_slot(plan) / DAYS_IN_CYCLE
     return per_day_cost * days_left
 
-# Platform profit is FIXED at 50% of real_cost_per_slot
+# Platform profit is calculated based on the subscription as different subscription has their own rates
+# 1. Get the subscription name so tha you can get the subscription rate for that subscription
+def get_platfrom_profit_rate(plan: SubscriptionPlan) -> float:
+    return PLATFORM_PROFIT_RATE.get(
+        plan.name
+    )
+
+# 2. After getting the name, tap in to get the rate for that subscription to calculate what a user should pay
 def platform_profit_per_user(plan: SubscriptionPlan) -> float:
-    return real_cost_per_slot(plan) * PLATFORM_PROFIT_RATE
+    rate = get_platfrom_profit_rate(plan)
+    if rate is None:
+        raise ValueError(f"No platform profit rate defined for {plan.name}")
+    return real_cost_per_slot(plan) * rate
 
 # Final price a new User pays
 def join_price(today: date, plan: SubscriptionPlan) -> JoinResult:

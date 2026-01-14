@@ -8,16 +8,13 @@ class Payment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(Integer, ForeignKey("users.id"))
-    plan_id = Column(Integer, ForeignKey("subscription_plans.id"))
+    payer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    group_id = Column(Integer, ForeignKey("groups.id"), nullable=False)
 
     amount_paid = Column(Integer, nullable=False)
-
-    # Join_payment | Owner_payout | Refund
-    payment_type = Column(String, nullable=False)
-
-    # Pending | Completed | Failed
-    status = Column(String, default="PENDING")
+    status = Column(String, default="pending") # pending, completed, refunded
+    payment_type = Column(String, nullable=False) # Join_payment | Owner_payout | Refund
     created_at =Column(DateTime, default=datetime.utcnow)
-
-    user = relationship("User", back_populates="payments")
+    # Relationships
+    payer = relationship("User", back_populates="payments")
+    group = relationship("Group")

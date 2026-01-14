@@ -16,7 +16,7 @@ class User(Base):
     # Relationships
     groups_created = relationship("Group", back_populates="host")
     memberships = relationship("GroupMember", back_populates="user")
-    payments = relationship("Payment", back_populates="user")
+    payments = relationship("Payment", back_populates="payer")
 
     # Wallet for owners (credited but not withdrawable immediately)
     pending_balance = Column(Integer, default=0)   # kobo or naira? (decide once)
