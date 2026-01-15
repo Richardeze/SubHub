@@ -69,7 +69,7 @@ def join_group(
         group_id = group_id,
         amount_paid = pricing_result.join_price,
         status = "pending",
-        payment_type = "join_payment",
+        payment_purpose = "join_payment",
     )
     db.add(payment)
 

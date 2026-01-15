@@ -13,7 +13,8 @@ class Payment(Base):
 
     amount_paid = Column(Integer, nullable=False)
     status = Column(String, default="pending") # pending, completed, refunded
-    payment_type = Column(String, nullable=False) # Join_payment | Owner_payout | Refund
+    payment_purpose = Column(String, nullable=False) # Join_payment | Owner_payout | Refund | Wallet_funding
+    payment_type = Column(String, nullable=False) # Wallet | korapay_card | korapay_transfer
     created_at =Column(DateTime, default=datetime.utcnow)
     # Relationships
     payer = relationship("User", back_populates="payments")
