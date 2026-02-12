@@ -5,6 +5,7 @@ from models.group import Group
 from models.group_member import GroupMember
 from models.payment import Payment
 from models.subscription import Subscription
+from models.wallet import Wallet
 
 from core.pricing import (SubscriptionPlan,
                           join_price)
@@ -40,9 +41,14 @@ def join_group(
     if group.slots_filled >= group.subscription.total_slots:
         raise ValueError("Group is already full")
 
-    # 5. Fetch Subscription
-    subscription: Subscription = group.subscription
+    # 5. Fetch Wallet
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
+    owner_wallet = db.query(Wallet).filter(Wallet.user_id == group.host_user_id).first()
+    if not user_wallet or not owner_wallet:
+         raise ValueError("Wallet not found")
+
     # 6. Build pricing plan
+    subscription: Subscription = group.subscription
     plan = SubscriptionPlan(
         name = subscription.name,
         total_price= subscription.total_price,
@@ -50,30 +56,38 @@ def join_group(
         start_date=group.created_at.date(),
         renewal_date = group.renewal_date.date()
     )
-
-    # 7. Calculate pricing
     pricing_result = join_price(today=date.today(), plan=plan)
 
-    # 8. Create GroupMember
+    # 7. Wallet Balance Check
+    if user_wallet.available_balance < pricing_result.join_price:
+        raise ValueError("Insufficient Wallet balance")
+
+    # 8. Debit joiner / Credit Owner locked wallet
+    user_wallet.available_balance -= pricing_result.join_price
+    owner_wallet.locked_balance += pricing_result.owner_credit
+
+    # 9. Create GroupMember
     member = GroupMember(
         group_id= group_id,
         user_id = user_id,
-        payment_status = "pending",
+        payment_status = "paid",
         amount_paid = pricing_result.join_price,
     )
     db.add(member)
 
-    # 9. Create Payment
+    # 10. Create Payment
     payment = Payment(
         payer_id= user_id,
+        recipient_id = group.host_user_id,
         group_id = group_id,
         amount_paid = pricing_result.join_price,
-        status = "pending",
+        status = "successful",
         payment_purpose = "join_payment",
+        payment_method = "wallet"
     )
     db.add(payment)
 
-    # 10. Update group slots
+    # 11. Update group slots
     group.slots_filled += 1
     if group.slots_filled >= subscription.total_slots:
         group.status = "full"
@@ -86,5 +100,5 @@ def join_group(
         "join_price": pricing_result.join_price,
         "owner_credit": pricing_result.owner_credit,
         "platform_profit": pricing_result.platform_profit,
-        "payment_status": "pending"
+        "wallet_balance": user_wallet.available_balance
     }

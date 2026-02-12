@@ -1,8 +1,45 @@
+# From SubHub root folder
+touch .gitignore
+```
+
+**Paste this into `.gitignore`:**
+```
+# Python
 __pycache__/
-*.pyc
-.venv/
+*.py[cod]
+*$py.class
+*.so
+.Python
 venv/
+.venv/
+env/
+ENV/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+subhub.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
 .env
+.env.local
+
+# FastAPI
+.pytest_cache/
+
+# Logs
+*.log
+
+# Mac
 .DS_Store
 
 

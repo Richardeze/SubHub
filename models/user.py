@@ -8,18 +8,16 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    password_hash = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=False)
 
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
-    groups_created = relationship("Group", back_populates="host")
+    groups_hosted = relationship("Group", back_populates="host")
     memberships = relationship("GroupMember", back_populates="user")
     payments = relationship("Payment", back_populates="payer")
-
-    # Wallet for owners (credited but not withdrawable immediately)
-    pending_balance = Column(Integer, default=0)   # kobo or naira? (decide once)
-    withdrawable_balance = Column(Integer, default=0)
+    wallet = relationship("Wallet", back_populates="user", uselist=False)
+    group_requests = relationship("GroupRequest", back_populates="requester")
 
 

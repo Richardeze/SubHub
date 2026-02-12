@@ -23,5 +23,5 @@ class GroupRequest(Base):
     rejection_reason = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     # Relationships
-    requester = relationship("User")
-    subscription = relationship("Subscription")
+    requester = relationship("User", back_populates="group_requests")
+    subscription = relationship("Subscription", back_populates="group_requests")

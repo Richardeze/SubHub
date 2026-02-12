@@ -19,3 +19,4 @@ class Group(Base):
     subscription = relationship("Subscription", back_populates="groups")
     host = relationship("User", back_populates="groups_hosted")
     members = relationship("GroupMember", back_populates="group")
+    payments = relationship("Payment", back_populates="group")

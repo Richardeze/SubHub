@@ -18,4 +18,4 @@ class Payment(Base):
     created_at =Column(DateTime, default=datetime.utcnow)
     # Relationships
     payer = relationship("User", back_populates="payments")
-    group = relationship("Group")
+    group = relationship("Group", back_populates="payments")
