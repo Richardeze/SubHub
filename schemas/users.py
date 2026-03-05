@@ -45,8 +45,9 @@ class PaymentResponse(BaseModel):
     reference: str | None
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class PaymentHistoryResponse(BaseModel):
