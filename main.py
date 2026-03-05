@@ -11,7 +11,7 @@ from models.wallet import Wallet
 from models.payment import Payment
 
 # Router imports
-from routers import groups
+from routers import groups, auth, subscriptions, users
 
 # Create all database tables
 Base.metadata.create_all(bind=engine)
@@ -23,6 +23,9 @@ app = FastAPI(
 )
 
 app.include_router(groups.router, prefix="/api/v1")
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(subscriptions.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
 
 @app.get("/")
 def root():

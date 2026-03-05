@@ -4,9 +4,11 @@ from models.group_request import GroupRequest
 from models.subscription import Subscription
 from datetime import datetime, date
 from core.subscription_rules import validate_subscription_slots
+from models.user import User
 
-def create_group_request(db: Session,
-                         requester_id: int,
+def create_group_request(*,
+                         db: Session,
+                         current_user: User,
                          subscription_id: int,
                          sub_start_date: datetime,
                          sub_end_date: datetime,
@@ -35,7 +37,7 @@ def create_group_request(db: Session,
 
     """ 4. Prevent duplicate pending group requests"""
     existing_group_request = (db.query(GroupRequest).filter(
-        GroupRequest.requester_id == requester_id,
+        GroupRequest.requester_id == current_user.id,
         GroupRequest.subscription_id == subscription_id,
         GroupRequest.status == "pending"
     )).first()
@@ -43,12 +45,15 @@ def create_group_request(db: Session,
         raise ValueError("You already have a pending request for this subscription")
 
     """ Card expiry validation"""
-    if payment_method == "card" and not card_expiry:
-        raise ValueError("Card expiry is required when payment method is card")
+    if payment_method == "card":
+        if not card_expiry:
+            raise ValueError("Card expiry is required when payment method is card")
+    else:
+        card_expiry = None
 
     """ 5. Create GroupRequest"""
     group_request = GroupRequest(
-        requester_id = requester_id,
+        requester_id = current_user.id,
         subscription_id = subscription_id,
         sub_start_date = sub_start_date,
         sub_end_date=sub_end_date,

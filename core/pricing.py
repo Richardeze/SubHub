@@ -10,7 +10,7 @@ PAYOUT_UNLOCK_DAYS = 3
 # PROFIT RATES PER SUBSCRIPTION
 PLATFORM_PROFIT_RATE = {
     "Spotify": 0.7,
-    "Apple music": 1.5,
+    "Apple music": 1.2,
     "Netflix": 0.36,
     "Youtube": 0.7
 }

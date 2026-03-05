@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from jose import jwt, JWTError
 
 # Move the below constants to .env later
-SECRET_KEY = "CHANGE_ME_SECRET_KEY"
+SECRET_KEY = "OZAF1eftzXa6x55aoBtRjkIlnCGSdp90h1dyhz66SM4"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

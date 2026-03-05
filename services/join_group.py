@@ -6,13 +6,15 @@ from models.group_member import GroupMember
 from models.payment import Payment
 from models.subscription import Subscription
 from models.wallet import Wallet
+from models.user import User
 
 from core.pricing import (SubscriptionPlan,
                           join_price)
 
 def join_group(
+        *,
         db: Session,
-        user_id: int,
+        current_user: User,
         group_id: int
 ):
     """ User joins an existing group and gets charged a prorated price"""
@@ -26,13 +28,13 @@ def join_group(
         raise ValueError("This group is not open for joining")
 
     # 2. Prevent host from joining
-    if group.host_user_id == user_id:
+    if group.host_user_id == current_user.id:
         raise ValueError("Host cannot join their own group")
 
     # 3. Prevent duplicate membership
     existing_member = db.query(GroupMember).filter(
         GroupMember.group_id == group_id,
-        GroupMember.user_id == user_id
+        GroupMember.user_id == current_user.id
     ).first()
     if existing_member:
         raise ValueError("User already belongs to this group")
@@ -42,7 +44,7 @@ def join_group(
         raise ValueError("Group is already full")
 
     # 5. Fetch Wallet
-    user_wallet = db.query(Wallet).filter(Wallet.user_id == user_id).first()
+    user_wallet = db.query(Wallet).filter(Wallet.user_id == current_user.id).first()
     owner_wallet = db.query(Wallet).filter(Wallet.user_id == group.host_user_id).first()
     if not user_wallet or not owner_wallet:
          raise ValueError("Wallet not found")
@@ -69,7 +71,7 @@ def join_group(
     # 9. Create GroupMember
     member = GroupMember(
         group_id= group_id,
-        user_id = user_id,
+        user_id = current_user.id,
         payment_status = "paid",
         amount_paid = pricing_result.join_price,
     )
@@ -77,7 +79,7 @@ def join_group(
 
     # 10. Create Payment
     payment = Payment(
-        payer_id= user_id,
+        payer_id= current_user.id,
         recipient_id = group.host_user_id,
         group_id = group_id,
         amount_paid = pricing_result.join_price,

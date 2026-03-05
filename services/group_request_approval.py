@@ -2,17 +2,22 @@ from sqlalchemy.orm import Session
 from models.group_request import GroupRequest
 from models.group import Group
 from models.subscription import Subscription
+from models.user import User
 from core.subscription_rules import validate_subscription_slots
 
 def approve_group_request(
+        *,
         db: Session,
         group_request_id: int,
+        current_user: User
 ):
     """ Approves a pending GroupRequest and creates a Group"""
     # 1. Fetch the GroupRequest
     group_request = db.query(GroupRequest).filter(
         GroupRequest.id == group_request_id
     ).first()
+    if not current_user.is_admin:
+        raise ValueError("Only Admins can approve Group requests")
     if not group_request:
         raise ValueError("Group request not found")
 
