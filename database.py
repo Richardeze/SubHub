@@ -1,29 +1,33 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.base import Base
 
-# DATABASE CONNECTION STRING
-DATABASE_URL = "sqlite:///subhub.db"
+# Get database URL from environment (Railway will provide this)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///subhub.db")
 
-# Create the database engine
+# SQLite needs this argument, Postgres does not
+connect_args = {}
+
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+# Create database engine
 engine = create_engine(
     DATABASE_URL,
-    echo=True,  # shows SQL queries in the terminal
-    connect_args={"check_same_thread": False}  # Required for SQLite with FastAPI
+    echo=True,
+    connect_args=connect_args
 )
 
-# Session factory (used later, not now)
-SessionLocal = sessionmaker(bind=engine,
-                            autoflush=False,
-                            autocommit=False)
+# Session factory
+SessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False
+)
 
-
-# Dependency function for FastAPI
+# Dependency for FastAPI routes
 def get_db():
-    """
-    Provides a database session to route handlers.
-    Automatically closes the session when done.
-    """
     db = SessionLocal()
     try:
         yield db
