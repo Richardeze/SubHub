@@ -3,12 +3,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from models.base import Base
 
-# Get database URL from environment (Railway will provide this)
+# Get database URL from environment (Render will provide this)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///subhub.db")
+
+# Render uses postgres:// but SQLAlchemy needs postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # SQLite needs this argument, Postgres does not
 connect_args = {}
-
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
