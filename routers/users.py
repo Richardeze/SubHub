@@ -34,15 +34,17 @@ def get_user_wallet(current_user: User = Depends(get_current_user),
     # Calculate total balance
     total = wallet.available_balance + wallet.locked_balance
 
-    return {"id": wallet.id,
-        "user_id": wallet.user_id,
-        "available_balance": wallet.available_balance,
-        "locked_balance": wallet.locked_balance,
-        "total_balance": total,
-        "created_at": wallet.created_at,
-        "updated_at": wallet.updated_at}
+    return WalletResponse(
+        id=wallet.id,
+        user_id=wallet.user_id,
+        available_balance=wallet.available_balance,
+        locked_balance=wallet.locked_balance,
+        total_balance=wallet.available_balance + wallet.locked_balance,
+        created_at=wallet.created_at,
+        updated_at=wallet.updated_at
+    )
 
-@router.post("/me/wallet/fund", response_model=FundWalletRequest)
+@router.post("/me/wallet/fund", response_model=FundWalletResponse)
 def fund_wallet(
         request: FundWalletRequest,
         current_user: User = Depends(get_current_user),
@@ -76,7 +78,7 @@ def fund_wallet(
         db=db,
         payer_id=current_user.id,
         amount=request.amount,
-        purpose="Wallet_funding",
+        purpose="wallet_funding",
         payment_type=request.payment_method,
         status="completed"
     )
@@ -87,12 +89,10 @@ def fund_wallet(
     return {
         "success": True,
         "message": f"Successfully added ₦{request.amount:,} to your wallet",
-        "data": {
-            "previous_balance": old_balance,
-            "amount_added": request.amount,
-            "new_balance": wallet.available_balance,
-            "payment_method": request.payment_method
-        }
+        "previous_balance": old_balance,
+        "amount_added": request.amount,
+        "new_balance": wallet.available_balance,
+        "payment_method": request.payment_method
     }
 
 # Payment history endpoints

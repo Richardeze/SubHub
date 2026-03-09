@@ -33,6 +33,14 @@ class FundWalletRequest(BaseModel):
     amount: int  # Amount in Naira (or kobo)
     payment_method: str = "mock_payment"  # For now, just mock
 
+class FundWalletResponse(BaseModel):
+    success: bool
+    message: str
+    previous_balance: int
+    amount_added: int
+    new_balance: int
+    payment_method: str
+
 # Payment Schemas
 class PaymentResponse(BaseModel):
     id: int

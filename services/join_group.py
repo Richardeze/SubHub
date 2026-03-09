@@ -68,16 +68,7 @@ def join_group(
     user_wallet.available_balance -= pricing_result.join_price
     owner_wallet.locked_balance += pricing_result.owner_credit
 
-    # 9. Create GroupMember
-    member = GroupMember(
-        group_id= group_id,
-        user_id = current_user.id,
-        payment_status = "paid",
-        amount_paid = pricing_result.join_price,
-    )
-    db.add(member)
-
-    # 10. Create Payment
+    # 9. Create Payment
     payment = Payment(
         payer_id= current_user.id,
         recipient_id = group.host_user_id,
@@ -88,6 +79,16 @@ def join_group(
         payment_method = "wallet"
     )
     db.add(payment)
+
+    # 10. Create GroupMember
+    member = GroupMember(
+        group_id= group_id,
+        user_id = current_user.id,
+        payment_status = "paid",
+        amount_paid = pricing_result.join_price,
+    )
+    db.add(member)
+
 
     # 11. Update group slots
     group.slots_filled += 1
