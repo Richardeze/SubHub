@@ -11,7 +11,7 @@ from models.wallet import Wallet
 from models.payment import Payment
 
 # Router imports
-from routers import groups, auth, subscriptions, users
+from routers import groups, auth, subscriptions, users, admin_groups
 
 # Create all database tables
 Base.metadata.create_all(bind=engine)
@@ -26,6 +26,7 @@ app.include_router(groups.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(subscriptions.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
+app.include_router(admin_groups.router)
 
 @app.get("/")
 def root():

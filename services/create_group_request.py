@@ -9,19 +9,19 @@ from models.user import User
 def create_group_request(*,
                          db: Session,
                          current_user: User,
-                         subscription_id: int,
+                         subscription_name: str,
                          sub_start_date: datetime,
                          sub_end_date: datetime,
                          renewal_date: datetime,
                          total_slots: int,
                          payment_method: str,
-                         card_expiry: Optional[date],
+                         card_expiry: Optional[date] = None,
                          proof_url: str | None = None
                          ):
 
     """ 1. Validate Subscription exists"""
     subscription = db.query(Subscription).filter(
-        Subscription.id == subscription_id
+        Subscription.name.ilike(subscription_name)
     ).first()
     if not subscription:
         raise ValueError("Subscription does not exist")
@@ -32,19 +32,27 @@ def create_group_request(*,
         total_slots=total_slots
     )
     """ 3. Date Validation"""
-    if not (sub_start_date < renewal_date <= sub_end_date):
-        raise ValueError("Invalid Subscription dates")
+    if sub_start_date >= sub_end_date:
+        raise ValueError("Subscription start date must be before end date")
+
+    if not (sub_start_date <= renewal_date <= sub_end_date):
+        raise ValueError("Renewal date must be within subscription period")
 
     """ 4. Prevent duplicate pending group requests"""
     existing_group_request = (db.query(GroupRequest).filter(
         GroupRequest.requester_id == current_user.id,
-        GroupRequest.subscription_id == subscription_id,
+        GroupRequest.subscription_name == subscription.name,
         GroupRequest.status == "pending"
     )).first()
     if existing_group_request:
         raise ValueError("You already have a pending request for this subscription")
 
     """ Card expiry validation"""
+    allowed_methods = ["card", "transfer"]
+
+    if payment_method not in allowed_methods:
+        raise ValueError("Invalid payment method")
+
     if payment_method == "card":
         if not card_expiry:
             raise ValueError("Card expiry is required when payment method is card")
@@ -54,7 +62,7 @@ def create_group_request(*,
     """ 5. Create GroupRequest"""
     group_request = GroupRequest(
         requester_id = current_user.id,
-        subscription_id = subscription_id,
+        subscription_name= subscription.name,
         sub_start_date = sub_start_date,
         sub_end_date=sub_end_date,
         renewal_date=renewal_date,
