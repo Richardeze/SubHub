@@ -4,7 +4,7 @@ from typing import Optional
 
 
 class CreateGroupRequest(BaseModel):
-    subscription_name: str = Field(..., gt=0)
+    subscription_name: str = Field(..., min_length=2, max_length=50)
 
     sub_start_date: datetime
     sub_end_date: datetime
